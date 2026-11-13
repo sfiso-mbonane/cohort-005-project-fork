@@ -46,6 +46,8 @@ export default [
     route("admin/refunds", "routes/admin.refunds.tsx"),
     route("settings", "routes/settings.tsx"),
     route("team", "routes/team.tsx"),
+    // PROTOTYPE: Notification Feed variant B
+    route("notifications", "routes/notifications.prototype.tsx"),
     route("redeem/:code", "routes/redeem.$code.tsx"),
   ]),
   route("signup", "routes/signup.tsx"),
@@ -54,4 +56,6 @@ export default [
   route("api/logout", "routes/api.logout.ts"),
   route("api/video-tracking", "routes/api.video-tracking.ts"),
   route("api/set-dev-country", "routes/api.set-dev-country.ts"),
+  // PROTOTYPE: feed token + test triggers
+  route("api/prototype-notifications", "routes/api.prototype-notifications.ts"),
 ] satisfies RouteConfig;

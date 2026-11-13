@@ -1,4 +1,12 @@
-import { Outlet } from "react-router";
+import { Outlet, useSearchParams } from "react-router";
+import {
+  NotificationFeedProvider,
+  NotificationDevPanel,
+  VariantABell,
+  VariantBNavItem,
+  VariantCTopBar,
+} from "~/components/notification-feed-prototype";
+import { PrototypeSwitcher } from "~/components/prototype-switcher";
 import type { Route } from "./+types/layout.app";
 import { Sidebar } from "~/components/sidebar";
 import { DevUI } from "~/components/dev-ui";
@@ -185,7 +193,11 @@ export async function loader({ request }: Route.LoaderArgs) {
           course.courseId
         );
         const totalLessons = getTotalLessonCount(course.courseId);
-        const progress = calculateProgress(currentUserId, course.courseId, false);
+        const progress = calculateProgress(
+          currentUserId,
+          course.courseId,
+          false
+        );
         return {
           courseId: course.courseId,
           title: course.courseTitle,
@@ -226,25 +238,42 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
     countries,
     isTeamAdmin: userIsTeamAdmin,
   } = loaderData;
+  // PROTOTYPE: Notification Feed variants (prototype/notification-feed branch)
+  const [params] = useSearchParams();
+  const variant = params.get("variant") ?? "A";
+  const signedIn = !!currentUser;
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        currentUser={currentUser}
-        recentCourses={recentCourses}
-        isTeamAdmin={userIsTeamAdmin}
-      />
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
-      <DevUI
-        users={users}
-        currentUser={currentUser}
-        devCountry={devCountry}
-        countryTierInfo={countryTierInfo}
-        countries={countries}
-      />
-      <Toaster position="bottom-right" richColors closeButton />
-    </div>
+    <NotificationFeedProvider userId={currentUser?.id ?? null}>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar
+          currentUser={currentUser}
+          recentCourses={recentCourses}
+          isTeamAdmin={userIsTeamAdmin}
+          headerSlot={signedIn && variant === "A" ? <VariantABell /> : null}
+          navSlot={signedIn && variant === "B" ? <VariantBNavItem /> : null}
+        />
+        <main className="flex-1 overflow-y-auto">
+          {signedIn && variant === "C" && <VariantCTopBar />}
+          <Outlet />
+        </main>
+        {signedIn && <NotificationDevPanel />}
+        <PrototypeSwitcher
+          variants={{
+            A: "Sidebar bell → dropdown",
+            B: "Nav item → full page",
+            C: "Top bar → drawer by urgency",
+          }}
+        />
+        <DevUI
+          users={users}
+          currentUser={currentUser}
+          devCountry={devCountry}
+          countryTierInfo={countryTierInfo}
+          countries={countries}
+        />
+        <Toaster position="bottom-right" richColors closeButton />
+      </div>
+    </NotificationFeedProvider>
   );
 }
