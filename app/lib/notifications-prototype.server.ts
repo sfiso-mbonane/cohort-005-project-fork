@@ -123,7 +123,8 @@ export async function triggerSample(
       recipients: [
         {
           distinct_id: distinctIdFor(recipient.id),
-          $email: [recipient.email],
+          // No $email here: inline channels made SuprSend skip the Inbox node
+          // ("no common channels found between delivery-node channels and '$channels'").
           name: recipient.name,
         },
       ],
