@@ -1,0 +1,5 @@
+# Generated or vendored
+drizzle/
+.agents/
+package-lock.json
+skills-lock.json

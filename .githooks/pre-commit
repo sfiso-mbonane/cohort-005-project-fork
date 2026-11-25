@@ -1,0 +1,21 @@
+#!/bin/sh
+# Pre-commit: Prettier formatting + file size (token) check on staged files.
+# Installed by `npm install` (the `prepare` script sets core.hooksPath).
+# Budget: 3 seconds. Slow checks (typecheck, boundaries, tests) belong in CI.
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$STAGED" ] && exit 0
+
+status=0
+
+# --cache skips files unchanged since the last check (cache in node_modules/.cache).
+echo "$STAGED" | tr '\n' '\0' | xargs -0 node_modules/.bin/prettier --check --ignore-unknown --cache || {
+  echo ""
+  echo "Prettier check failed. Fix with: npx prettier --write <files above>, then re-stage."
+  status=1
+}
+
+# Node 24 runs TypeScript directly; no tsx startup cost.
+echo "$STAGED" | tr '\n' '\0' | xargs -0 node scripts/check-file-tokens.ts || status=1
+
+exit $status
